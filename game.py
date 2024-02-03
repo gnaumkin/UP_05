@@ -16,20 +16,25 @@ class DinosaurGame(QWidget):
         self.setWindowTitle('Dinosaur Game')
 
         self.dino_label = QLabel(self)
-        dino_icon = load_icon(r'C:\УП.05\pythonProject1\.venv\dino_icon.png')
+        dino_icon = load_icon(r'C:\UP05\UP_05\dino_icon.png')
         self.dino_label.setPixmap(self.image_to_pixmap(dino_icon))
 
         self.ground_label = QLabel(self)
-        ground_icon = load_icon(r'C:\УП.05\pythonProject1\.venv\ground_icon.png')
+        ground_icon = load_icon(r'C:\UP05\UP_05\ground_icon.png')
         self.ground_label.setPixmap(self.image_to_pixmap(ground_icon))
 
         self.cactus_label = QLabel(self)
-        cactus_icon = load_icon(r'C:\УП.05\pythonProject1\.venv\cactus_icon.png')
+        cactus_icon = load_icon(r'C:\UP05\UP_05\cactus_icon.png')
         self.cactus_label.setPixmap(self.image_to_pixmap(cactus_icon))
+
+        self.pterodactyl_label = QLabel(self)
+        pterodactyl_icon = load_icon(r'C:\UP05\UP_05\pterodactyl_icon.png')
+        self.pterodactyl_label.setPixmap(self.image_to_pixmap(pterodactyl_icon))
 
         self.dino_label.setGeometry(50, 200, 40, 40)
         self.ground_label.setGeometry(0, 240, 800, 60)
         self.cactus_label.setGeometry(800, 200, 40, 40)
+        self.pterodactyl_label.setGeometry(300, 100, 50, 50)
 
         self.dino_jump = False
         self.jump_height = 120
@@ -46,6 +51,10 @@ class DinosaurGame(QWidget):
         self.speed_increase_timer.timeout.connect(self.increase_speed)
         self.speed_increase_timer.start(self.speed_increase_interval)
 
+        self.timer = QTimer(self)
+        self.timer.timeout.connect(self.move_pterodactyl)
+        self.timer.start(50)
+
         self.score = 0
         self.score_label = QLabel('Score: 0', self)
         self.score_label.setGeometry(10, 10, 100, 30)
@@ -58,7 +67,8 @@ class DinosaurGame(QWidget):
     def keyPressEvent(self, event):
         if event.key() == Qt.Key_Space and not self.dino_jump:
             self.dino_jump = True
-
+        elif event.key() == Qt.Key_Control:
+            self.duck()
     def check_collision(self):
         dino_rect = QRect(self.dino_label.x() + 5, self.dino_label.y() + 5, self.dino_label.width() - 10,
                           self.dino_label.height() - 10)
