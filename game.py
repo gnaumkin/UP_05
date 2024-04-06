@@ -3,6 +3,7 @@ from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QMessageBox
 from PyQt5.QtCore import Qt, QTimer, QRect
 from PyQt5.QtGui import QPixmap, QImage
 from PIL import Image
+import random
 
 def load_icon(image_path, size=40):
     image = Image.open(image_path).resize((size, size))
@@ -23,18 +24,25 @@ class DinosaurGame(QWidget):
         ground_icon = load_icon(r'C:\UP05\UP_05\ground_icon.png')
         self.ground_label.setPixmap(self.image_to_pixmap(ground_icon))
 
-        self.cactus_label = QLabel(self)
-        cactus_icon = load_icon(r'C:\UP05\UP_05\cactus_icon.png')
-        self.cactus_label.setPixmap(self.image_to_pixmap(cactus_icon))
+        self.cactuses = []
+        for _ in range(3):
+            cactus_label = QLabel(self)
+            cactus_icon = load_icon(r'C:\UP05\UP_05\cactus_icon.png')
+            cactus_label.setPixmap(self.image_to_pixmap(cactus_icon))
+            self.cactuses.append(cactus_label)
 
         self.pterodactyl_label = QLabel(self)
         pterodactyl_icon = load_icon(r'C:\UP05\UP_05\pterodactyl_icon.png')
         self.pterodactyl_label.setPixmap(self.image_to_pixmap(pterodactyl_icon))
 
+        self.pterodactyl_label.setGeometry(800, 100, 50, 50)
         self.dino_label.setGeometry(50, 200, 40, 40)
         self.ground_label.setGeometry(0, 240, 800, 60)
-        self.cactus_label.setGeometry(800, 200, 40, 40)
-        self.pterodactyl_label.setGeometry(300, 100, 50, 50)
+
+        for i, cactus in enumerate(self.cactuses):
+            cactus.setGeometry(800 + i * 300, 200, 40, 40)
+
+        self.pterodactyl_label.setGeometry(800, 100, 50, 50)
 
         self.dino_jump = False
         self.jump_height = 120
@@ -51,11 +59,11 @@ class DinosaurGame(QWidget):
         self.speed_increase_timer.timeout.connect(self.increase_speed)
         self.speed_increase_timer.start(self.speed_increase_interval)
 
-        self.timer = QTimer(self)
-        self.timer.timeout.connect(self.move_pterodactyl)
-        self.timer.start(50)
+        self.pterodactyl_timer = QTimer(self)  # Один QTimer для птеродактиля
+        self.pterodactyl_timer.timeout.connect(self.move_pterodactyl)
+        self.pterodactyl_timer.start(1000)  # Появление птеродактиля через 2 секунды после старта игры
 
-        self.score = 0
+        self.score = 1
         self.score_label = QLabel('Score: 0', self)
         self.score_label.setGeometry(10, 10, 100, 30)
 
@@ -67,17 +75,23 @@ class DinosaurGame(QWidget):
     def keyPressEvent(self, event):
         if event.key() == Qt.Key_Space and not self.dino_jump:
             self.dino_jump = True
-        elif event.key() == Qt.Key_Control:
-            self.duck()
+
     def check_collision(self):
         dino_rect = QRect(self.dino_label.x() + 5, self.dino_label.y() + 5, self.dino_label.width() - 10,
                           self.dino_label.height() - 10)
-        cactus_rect = QRect(self.cactus_label.x() + 5, self.cactus_label.y() + 5, self.cactus_label.width() - 10,
-                            self.cactus_label.height() - 10)
 
-        if dino_rect.intersects(cactus_rect):
+        for cactus in self.cactuses:
+            cactus_rect = QRect(cactus.x() + 5, cactus.y() + 5, cactus.width() - 10, cactus.height() - 10)
+            if dino_rect.intersects(cactus_rect):
+                self.timer.stop()
+                QMessageBox.information(self, 'Game Over', 'You collided with the cactus! Game Over.')
+                self.close()
+
+        pterodactyl_rect = QRect(self.pterodactyl_label.x() + 5, self.pterodactyl_label.y() + 5,
+                                 self.pterodactyl_label.width() - 10, self.pterodactyl_label.height() - 10)
+        if dino_rect.intersects(pterodactyl_rect):
             self.timer.stop()
-            QMessageBox.information(self, 'Game Over', 'You collided with the cactus! Game Over.')
+            QMessageBox.information(self, 'Game Over', 'You collided with the pterodactyl! Game Over.')
             self.close()
 
     def update_game(self):
@@ -92,16 +106,26 @@ class DinosaurGame(QWidget):
                 dino_y = 200
                 self.jump_step = 12
 
-        cactus_x = self.cactus_label.x()
-        cactus_x -= self.dino_speed
+        for cactus in self.cactuses:
+            cactus_x = cactus.x()
+            cactus_x -= self.dino_speed
 
-        if cactus_x < 0:
-            cactus_x = 800
+            if cactus_x < 0:
+                cactus_x = 800 + random.randint(100, 300)
+            cactus.move(cactus_x, 200)
+
         self.increase_score()
         self.dino_label.move(50, dino_y)
-        self.cactus_label.move(cactus_x, 200)
 
         self.check_collision()
+
+    def move_pterodactyl(self):
+        current_x = self.pterodactyl_label.x()
+        new_x = current_x - self.dino_speed
+        if new_x < -self.pterodactyl_label.width():
+            new_x = self.width()
+            new_y = random.randint(50, 150)
+            self.pterodactyl_label.move(new_x, new_y)
 
     def image_to_pixmap(self, image):
         width, height = image.size
@@ -111,8 +135,8 @@ class DinosaurGame(QWidget):
         return pixmap
 
     def increase_score(self):
-      self.score += 1
-      self.score_label.setText(f'Score: {self.score}')
+        self.score += 1
+        self.score_label.setText(f'Score: {self.score}')
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
