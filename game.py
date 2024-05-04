@@ -1,12 +1,10 @@
 import sys
-
-import self
+import os
 from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QMessageBox
 from PyQt5.QtCore import Qt, QTimer, QRect
 from PyQt5.QtGui import QPixmap, QImage
 from PIL import Image
 import random
-import os
 
 def load_icon(image_path, size=40):
     script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -25,14 +23,6 @@ class DinosaurGame(QWidget):
         dino_icon = load_icon('dino_icon.png')
         self.dino_label.setPixmap(self.image_to_pixmap(dino_icon))
 
-        self.ground_label = QLabel(self)
-        ground_icon = load_icon(r'C:\UP05\UP_05\ground_icon.png')
-        self.ground_label.setPixmap(self.image_to_pixmap(ground_icon))
-
-        self.cactuses = []
-        for _ in range(3):
-            cactus_label = QLabel(self)
-            cactus_icon = load_icon(r'C:\UP05\UP_05\cactus_icon.png')
         self.cactuses = []
         for _ in range(3):
             cactus_label = QLabel(self)
@@ -46,17 +36,11 @@ class DinosaurGame(QWidget):
 
         self.pterodactyl_label.setGeometry(800, 100, 50, 50)
         self.dino_label.setGeometry(50, 200, 40, 40)
-        self.ground_label.setGeometry(0, 240, 800, 60)
 
         for i, cactus in enumerate(self.cactuses):
             cactus.setGeometry(800 + i * 300, 200, 40, 40)
 
         self.pterodactyl_label.setGeometry(800, 100, 50, 50)
-
-        for i, cactus in enumerate(self.cactuses):
-            cactus.setGeometry(800 + i * 300, 100, 40, 40)
-
-        self.pterodactyl_label.setGeometry(500, 100, 40, 40)
 
         self.dino_jump = False
         self.jump_height = 120
@@ -76,9 +60,6 @@ class DinosaurGame(QWidget):
         self.pterodactyl_timer = QTimer(self)  # Один QTimer для птеродактиля
         self.pterodactyl_timer.timeout.connect(self.move_pterodactyl)
         self.pterodactyl_timer.start(1000)  # Появление птеродактиля через 2 секунды после старта игры
-        self.pterodactyl_timer = QTimer(self)
-        self.pterodactyl_timer.timeout.connect(self.move_pterodactyl)
-        self.pterodactyl_timer.start(1000)
 
         self.score = 1
         self.score_label = QLabel('Score: 0', self)
@@ -86,7 +67,6 @@ class DinosaurGame(QWidget):
 
         self.ground_x = 0
 
-        # Тут 2 копии земли дабы она двигалась
         self.ground_label1 = QLabel(self)
         self.ground_label2 = QLabel(self)
 
@@ -151,9 +131,6 @@ class DinosaurGame(QWidget):
             if cactus_x < 0:
                 cactus_x = 800 + random.randint(100, 300)
             cactus.move(cactus_x, 200)
-
-        self.increase_score()
-        self.dino_label.move(50, dino_y)
 
 
         self.move_pterodactyl()
