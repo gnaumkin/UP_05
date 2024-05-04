@@ -1,10 +1,10 @@
 import sys
-import os
 from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QMessageBox
 from PyQt5.QtCore import Qt, QTimer, QRect
 from PyQt5.QtGui import QPixmap, QImage
 from PIL import Image
 import random
+import os
 
 def load_icon(image_path, size=40):
     script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -38,9 +38,9 @@ class DinosaurGame(QWidget):
         self.dino_label.setGeometry(50, 200, 40, 40)
 
         for i, cactus in enumerate(self.cactuses):
-            cactus.setGeometry(800 + i * 300, 200, 40, 40)
+            cactus.setGeometry(800 + i * 300, 100, 40, 40)
 
-        self.pterodactyl_label.setGeometry(800, 100, 50, 50)
+        self.pterodactyl_label.setGeometry(500, 100, 40, 40)
 
         self.dino_jump = False
         self.jump_height = 120
@@ -57,9 +57,9 @@ class DinosaurGame(QWidget):
         self.speed_increase_timer.timeout.connect(self.increase_speed)
         self.speed_increase_timer.start(self.speed_increase_interval)
 
-        self.pterodactyl_timer = QTimer(self)  # Один QTimer для птеродактиля
+        self.pterodactyl_timer = QTimer(self)
         self.pterodactyl_timer.timeout.connect(self.move_pterodactyl)
-        self.pterodactyl_timer.start(1000)  # Появление птеродактиля через 2 секунды после старта игры
+        self.pterodactyl_timer.start(1000)
 
         self.score = 1
         self.score_label = QLabel('Score: 0', self)
@@ -67,6 +67,7 @@ class DinosaurGame(QWidget):
 
         self.ground_x = 0
 
+        # Делаем 2 копии земли
         self.ground_label1 = QLabel(self)
         self.ground_label2 = QLabel(self)
 
@@ -132,7 +133,6 @@ class DinosaurGame(QWidget):
                 cactus_x = 800 + random.randint(100, 300)
             cactus.move(cactus_x, 200)
 
-
         self.move_pterodactyl()
         self.increase_score()
         self.dino_label.move(50, dino_y)
@@ -144,8 +144,6 @@ class DinosaurGame(QWidget):
         new_x = current_x - self.dino_speed
         if new_x < -self.pterodactyl_label.width():
             new_x = self.width()
-            new_y = random.randint(50, 150)
-            self.pterodactyl_label.move(new_x, new_y)
             if not hasattr(self, 'ptero_y'):
                 self.ptero_y = random.randint(50, 150)
             new_y = self.ptero_y + 50
